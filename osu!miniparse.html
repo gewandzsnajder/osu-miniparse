@@ -128,16 +128,22 @@ html {
 
 <script>
 	var dataset = [];
-	
 	var setting = {};
-	setting.topOffset = 40;
-	setting.boxHeight = 50; // this gives that little overlap to match the original
-	setting.maxDisplay = 8;
-	setting.transitionTime = 5;
-	setting.fps = 60;
-	setting.flashEnabled = true;
+	setting.topOffset = 40;			// For positioning purposes should be like this
+	setting.boxHeight = 50; 		// This gives that little overlap to match the original
 	
-	setting.nameInitials = "initials"; // other options: "first", "last", "initials"
+	
+	//==============================================
+	// STUFF THAT CAN BE CONFIGURED BY THE USER GOES HERE
+	
+	setting.flashEnabled = true;	// Set to false to disable flash
+	setting.maxDisplay = 8;			// Number of rows to display
+	setting.transitionTime = 5;		// Rank animation time, lower = shorter
+	setting.fps = 60;				// Drawing fps
+	
+	setting.nameInitials = "default"; 	// Set name abbreviation rule: "default", "first", "last" or "initials"
+	
+	//==============================================
 	
 	var flashFlag = false;
 	var flashPos;
@@ -376,7 +382,7 @@ html {
 				var healer = ["Cnj", "Whm", "Sch", "Ast"];
 				
 				var maxOpacity = (i == myRank)?0.5:0.3;
-				var minOpacity = (i == myRank)?0.0:0.1;
+				var minOpacity = (i == myRank)?0.1:0.0;
 				var themeColor = "200,0,200";		
 				
 				if (healer.indexOf(ranking[i].job) != -1) {
@@ -389,7 +395,8 @@ html {
 					themeColor = "243,102,8";
 				} 
 				
-				box.style.background = "linear-gradient(rgba(" + themeColor + "," + maxOpacity + "),rgba(0,0,0," + minOpacity + "))";
+				box.style.background = "linear-gradient(rgba(" + themeColor + "," + maxOpacity + 
+										((i == myRank)?"),rgba(" + themeColor + ",":"),rgba(0,0,0,") + minOpacity + "))";
 				box.style.border = "1px solid rgba(" + themeColor + ", " + maxOpacity + ")"; 
 				
 				box.style.top = ranking[i].y;
