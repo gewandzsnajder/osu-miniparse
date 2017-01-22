@@ -255,7 +255,9 @@ html {
 					}
 				}
 				
-				ranking[i].alpha = 1;
+				if(ranking[i].name == "YOU") {
+					ranking[i].alpha = (ranking[i].prev == -1)?0:1;
+				}
 				if (ranking[i].prev == -1 || ranking[i].prev > setting.maxDisplay) { 		// for people joining the ranks (fade in)
 					ranking[i].y = setting.topOffset + setting.boxHeight * (i + 1);					
 					ranking[i].prev = i;
@@ -264,9 +266,6 @@ html {
 					ranking[i].alpha = 1;
 				}
 				
-				if(ranking[i].name == "YOU") {
-					ranking[i].alpha = 1;
-				}
 				
 				// If get better deeps, then flashy effect (only when getting to top ranks tho)
 				if (ranking[i].name == "YOU" && i < ranking[i].prev && ranking[i].prev < setting.maxDisplay) {
@@ -319,8 +318,8 @@ html {
 				if (i == setting.maxDisplay - 1 && myRank != -1 && isLast) {	// show at last on the list even if not on top ranks
 					i = myRank;
 					ranking[i].y = setting.topOffset + setting.boxHeight * (setting.maxDisplay - 1);
-					ranking[i].alpha = 1;
-					
+					ranking[i].alpha +=  (1 - ranking[i].alpha) / setting.transitionTime;
+				
 				} else if(i >= setting.maxDisplay) {
 					if (ranking[i].prev < setting.maxDisplay)  { // fade out
 						ranking[i].y += ((setting.topOffset + setting.boxHeight * setting.maxDisplay) - ranking[i].y ) / setting.transitionTime;
