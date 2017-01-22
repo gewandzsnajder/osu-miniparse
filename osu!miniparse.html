@@ -141,7 +141,7 @@ html {
 	setting.transitionTime = 5;		// Rank animation time, lower = shorter
 	setting.fps = 60;				// Drawing fps
 	
-	setting.nameInitials = "default"; 	// Set name abbreviation rule: "default", "first", "last" or "initials"
+	setting.nameInitials = "initials"; 	// Set name abbreviation rule: "default", "first", "last" or "initials"
 	
 	//==============================================
 	
@@ -202,11 +202,11 @@ html {
 				
 				ranking[i] = {};
 				ranking[i].name = data.Combatant[combName]["name"];
-				ranking[i].dps  = parseFloat(data.Combatant[combName]["encdps"].replace(/\.,/g), ".").toFixed(1);
-				ranking[i].hps  = parseFloat(data.Combatant[combName]["enchps"].replace(/\.,/g) ,".").toFixed(1);
-				ranking[i].dmg  = Math.max(0, parseInt(data.Combatant[combName]["damage"]));
+				ranking[i].dps  = parseFloat(data.Combatant[combName]["encdps"].replace(/[\.,]+/g), ".").toFixed(1);
+				ranking[i].hps  = parseFloat(data.Combatant[combName]["enchps"].replace(/[\.,]+/g) ,".").toFixed(1);
+				ranking[i].dmg  = parseInt(data.Combatant[combName]["damage"]);
 				ranking[i].dmgp = data.Combatant[combName]["damage%"];
-				ranking[i].max  = parseInt(data.Combatant[combName]["MAXHIT"].replace(/,/g, ""));
+				ranking[i].max  = parseInt(data.Combatant[combName]["MAXHIT"].replace(/[\.,]+/g ,""));
 				
 				// this is just to grab the correct glow icon
 				ranking[i].job = data.Combatant[combName]["Job"];
