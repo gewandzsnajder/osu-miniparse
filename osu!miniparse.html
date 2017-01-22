@@ -67,6 +67,10 @@ html {
 	position: relative;
 	top: 5px;
 }
+.combBox > .playerName.me {
+	font-weight: bold;
+	text-shadow: 0 0 5px rgba(255, 255, 0, 1);
+}
 
 .combBox > .dmg {
 	position: relative;
@@ -133,6 +137,8 @@ html {
 	setting.fps = 60;
 	setting.flashEnabled = true;
 	
+	setting.nameInitials = "initials"; // other options: "first", "last", "initials"
+	
 	var flashFlag = false;
 	var flashPos;
 	var maxHit = 0;
@@ -177,7 +183,9 @@ html {
 			
 			// DRAWS TITLE
 			encDiv.innerHTML = "<table cellspacing=0 cellpadding=0><tr><td width=65%>" + parseActFormat("{title}" , data.Encounter) + "</td>" + 
-							    "<td align='right'>" + parseFloat(parseActFormat("{dps}" , data.Encounter)).toFixed(1) + "</td></tr></table>";
+							    "<td align='right'>" + parseFloat(parseActFormat("{dps}" , data.Encounter)).toFixed(1) + "</td></tr>" + 
+								"<tr><td align='left'>" + parseActFormat("{duration}" , data.Encounter) + "</td></tr>" 
+								+ "</table>";
 			
 			// RANKING, THIS VAR STORES DATA TO BE DISPLAYED
 			ranking = new Array(Object.keys(data.Combatant).length);
@@ -188,7 +196,8 @@ html {
 				
 				ranking[i] = {};
 				ranking[i].name = data.Combatant[combName]["name"];
-				ranking[i].dps  = parseFloat(data.Combatant[combName]["dps"]).toFixed(1);
+				ranking[i].dps  = parseFloat(data.Combatant[combName]["encdps"]).toFixed(1);
+				ranking[i].hps  = parseFloat(data.Combatant[combName]["enchps"]).toFixed(1);
 				ranking[i].dmg  = Math.max(0, parseInt(data.Combatant[combName]["damage"]));
 				ranking[i].dmgp = data.Combatant[combName]["damage%"];
 				ranking[i].max  = parseInt(data.Combatant[combName]["MAXHIT"].replace(/,/g, ""));
@@ -226,6 +235,7 @@ html {
 			}
 			
 			// remove stuff dealing 0 damage
+			/*
 			var clean = new Array();
 			for(i = 0; i < ranking.length; i++) {
 				if(ranking[i].dmg > 0) {
@@ -233,12 +243,11 @@ html {
 				}
 			}
 			ranking = clean;
-			
+			*/
 			// SORT AND UPDATE RANKINGS
 			ranking.sort(function(a, b){return b.dmg - a.dmg});
 			
 			if(prevRank === undefined) {
-				console.log("AAAH!");
 				prevRank = new Array();
 			}
 			
@@ -335,7 +344,7 @@ html {
 				}
 								
 				box.innerHTML = " <img src='images/glow/" + ranking[i].job + ".png' >"; 
-				box.innerHTML += "<div class='playerName'>" + ranking[i].name + "</div><br>";
+				box.innerHTML += "<div class='playerName" + ((i == myRank)?" me":"") + "'>" + processName(ranking[i].name) + "</div><br>";
 				
 				// writing the deeps or damage
 				if (ranking[i].dps > 0) {
@@ -366,20 +375,22 @@ html {
 				var dps    = ["Pgl", "Mnk", "Lnc", "Drg", "Arc", "Brd", "Rog", "Nin", "Acn", "Smn", "Thm", "Blm", "Mch"];
 				var healer = ["Cnj", "Whm", "Sch", "Ast"];
 				
-				var themeColor = "rgba(200,0,200,0.3)";			
+				var maxOpacity = (i == myRank)?0.5:0.3;
+				var minOpacity = (i == myRank)?0.0:0.1;
+				var themeColor = "200,0,200";		
 				
 				if (healer.indexOf(ranking[i].job) != -1) {
-					themeColor = "rgba(107,240,86,0.3)";
+					themeColor = "107,240,86";
 				} else if (dps.indexOf(ranking[i].job) != -1)  {
-					themeColor = "rgba(200,3,8,0.3)";
+					themeColor = "200,3,8";
 				} else if (tank.indexOf(ranking[i].job) != -1) {
-					themeColor = "rgba(41,112,243,0.3)";
+					themeColor = "41,112,243";
 				} else if (ranking[i].job.indexOf("Limit Break") != -1){ 
-					themeColor = "rgba(243,102,8,0.3)";
+					themeColor = "243,102,8";
 				} 
 				
-				box.style.background = "linear-gradient(" + themeColor + ", rgba(0,0,0,0.1))";
-				box.style.border = "1px solid " + themeColor; 
+				box.style.background = "linear-gradient(rgba(" + themeColor + "," + maxOpacity + "),rgba(0,0,0," + minOpacity + "))";
+				box.style.border = "1px solid rgba(" + themeColor + ", " + maxOpacity + ")"; 
 				
 				box.style.top = ranking[i].y;
 				box.style.opacity = ranking[i].alpha;
@@ -458,6 +469,21 @@ html {
 			} while (currentIndex < str.length);
 
 			return result;
+		}
+		
+		
+		// Transforms a name into initials
+		function processName(name) {
+			if(name == "YOU") return name;
+			if(setting.nameInitials == "first"){
+				return name.replace(/([a-z']+)(?=[ ()]*)/, ".");
+			} else if (setting.nameInitials == "last") {
+				return name.replace(/([a-z']+)(?=[ ()]*$)/, ".");
+			} else if (setting.nameInitials == "initials") {
+				return name.replace(/([a-z']+)/g, ".");
+			} else {
+				return name;
+			}
 		}
 		
 		
