@@ -202,8 +202,8 @@ html {
 				
 				ranking[i] = {};
 				ranking[i].name = data.Combatant[combName]["name"];
-				ranking[i].dps  = parseFloat(data.Combatant[combName]["encdps"]).toFixed(1);
-				ranking[i].hps  = parseFloat(data.Combatant[combName]["enchps"]).toFixed(1);
+				ranking[i].dps  = parseFloat(data.Combatant[combName]["encdps"].replace(/\.,/g), ".").toFixed(1);
+				ranking[i].hps  = parseFloat(data.Combatant[combName]["enchps"].replace(/\.,/g) ,".").toFixed(1);
 				ranking[i].dmg  = Math.max(0, parseInt(data.Combatant[combName]["damage"]));
 				ranking[i].dmgp = data.Combatant[combName]["damage%"];
 				ranking[i].max  = parseInt(data.Combatant[combName]["MAXHIT"].replace(/,/g, ""));
