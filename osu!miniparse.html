@@ -16,7 +16,6 @@
 
 body, html {
 	margin: 0;
-	background: gray;
 }
 
 html {
@@ -313,8 +312,6 @@ html {
 				var box = document.createElement("div");
 				box.className = "combBox";
 				
-				
-
 				if (i == setting.maxDisplay - 1 && myRank != -1 && isLast) {	// show at last on the list even if not on top ranks
 					i = myRank;
 					ranking[i].y = setting.topOffset + setting.boxHeight * (setting.maxDisplay - 1);
@@ -324,7 +321,6 @@ html {
 					if (ranking[i].prev < setting.maxDisplay)  { // fade out
 						ranking[i].y += ((setting.topOffset + setting.boxHeight * setting.maxDisplay) - ranking[i].y ) / setting.transitionTime;
 						ranking[i].alpha += (0 - ranking[i].alpha) / setting.transitionTime;
-						console.log(ranking[i].name);
 					} else {
 						ranking[i].alpha = 0;
 					}
@@ -337,9 +333,7 @@ html {
 					}
 					
 				}
-				
-				
-				
+								
 				box.innerHTML = " <img src='images/glow/" + ranking[i].job + ".png' >"; 
 				box.innerHTML += "<div class='playerName'>" + ranking[i].name + "</div><br>";
 				
