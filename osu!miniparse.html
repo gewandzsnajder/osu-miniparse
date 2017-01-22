@@ -339,7 +339,7 @@ html {
 				
 				// writing the deeps or damage
 				if (ranking[i].dps > 0) {
-					box.innerHTML += "<div class='dmg'>" + ranking[i].prev/*dps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")*/ + " (" + ranking[i].dmgp + ")</div><br>";
+					box.innerHTML += "<div class='dmg'>" + ranking[i].dps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " (" + ranking[i].dmgp + ")</div><br>";
 				} else {
 					if(ranking[i].dmg > 0) {
 						box.innerHTML += "<div class='dmg' style='font-style:italic'>" + ranking[i].dmg + "</div><br>";
