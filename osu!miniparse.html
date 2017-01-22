@@ -130,7 +130,8 @@ html {
 	setting.topOffset = 40;
 	setting.boxHeight = 50; // this gives that little overlap to match the original
 	setting.maxDisplay = 8;
-	setting.transitionTime = 10;
+	setting.transitionTime = 5;
+	setting.fps = 60;
 	setting.flashEnabled = true;
 	
 	var flashFlag = false;
@@ -237,26 +238,38 @@ html {
 			// SORT AND UPDATE RANKINGS
 			ranking.sort(function(a, b){return b.dmg - a.dmg});
 			
-			if(prevRank == undefined) prevRank = ranking;
+			if(prevRank === undefined) {
+				console.log("AAAH!");
+				prevRank = new Array();
+			}
 			
-			// CALCULATE PREVIOUS RANKING
-			for(i = 0; i < ranking.length; i++) {
-				ranking[i].prev = setting.maxDisplay; // players entering midway are defaulted as not on the rank
+			// GET PREVIOUS RANKING
+			for (i = 0; i < ranking.length; i++) {
+				ranking[i].prev = -1; // this is "no previous rank"
 				
-				ranking[i].y = setting.topOffset + setting.boxHeight * (i + 1);// Set starting y position for everyone
-				
-				for(var j = 0; j < prevRank.length; j++) {
-					if(prevRank[j].name === ranking[i].name) {
+				// if has previous rank, calculate initial position
+				for (var j = 0; j < prevRank.length; j++) {
+					if (prevRank[j].name === ranking[i].name) {
 						ranking[i].prev = j;
-						ranking[i].y = setting.topOffset + setting.boxHeight * j; // Set starting y according to previous position
 						continue;
 					}
 				}
-				ranking[i].alpha = (ranking[i].prev <= setting.maxDisplay - 1)?1:0; // Initial setting for alpha transition
 				
-			
+				ranking[i].alpha = 1;
+				if (ranking[i].prev == -1 || ranking[i].prev > setting.maxDisplay) { 		// for people joining the ranks (fade in)
+					ranking[i].y = setting.topOffset + setting.boxHeight * (i + 1);					
+					ranking[i].prev = i;
+				} else {
+					ranking[i].y = setting.topOffset + setting.boxHeight * ranking[i].prev;	// for everyone else (fade out if leaving)
+					ranking[i].alpha = 1;
+				}
+				
+				if(ranking[i].name == "YOU") {
+					ranking[i].alpha = 1;
+				}
+				
 				// If get better deeps, then flashy effect (only when getting to top ranks tho)
-				if(ranking[i].name == "YOU" && i < ranking[i].prev && ranking[i].prev < setting.maxDisplay) {
+				if (ranking[i].name == "YOU" && i < ranking[i].prev && ranking[i].prev < setting.maxDisplay) {
 					flashFlag = true;
 					flashPos = Math.min(setting.maxDisplay - 1, ranking[i].prev);
 					t = 0;
@@ -285,7 +298,7 @@ html {
 				combDiv.removeChild(combDiv.firstChild);
 			}
 
-			var myRank = 0;
+			var myRank = -1;
 			for(i = 0; i < ranking.length; i++) {
 				if(ranking[i].name == "YOU") {
 					myRank = i;
@@ -302,25 +315,38 @@ html {
 				box.className = "combBox";
 				
 				
-				if(i == setting.maxDisplay - 1 && isLast) {	// show at last on the list even if not on top ranks
+
+				if (i == setting.maxDisplay - 1 && myRank != -1 && isLast) {	// show at last on the list even if not on top ranks
 					i = myRank;
 					ranking[i].y = setting.topOffset + setting.boxHeight * (setting.maxDisplay - 1);
-					
 					ranking[i].alpha = 1;
-				} else if(i >= setting.maxDisplay) {	// people exiting the top ranks get faded out
-					ranking[i].y += ((setting.topOffset + setting.boxHeight * (setting.maxDisplay - 1)) - ranking[i].y ) / setting.transitionTime;
-					ranking[i].alpha += (0 - ranking[i].alpha) / setting.transitionTime;
-				} else {	// people getting in the top ranks get faded in
-					ranking[i].y += ((setting.topOffset + setting.boxHeight * i) - ranking[i].y ) / setting.transitionTime;
-					ranking[i].alpha += (1 - ranking[i].alpha) / setting.transitionTime;
+					
+				} else if(i >= setting.maxDisplay) {
+					if (ranking[i].prev < setting.maxDisplay)  { // fade out
+						ranking[i].y += ((setting.topOffset + setting.boxHeight * setting.maxDisplay) - ranking[i].y ) / setting.transitionTime;
+						ranking[i].alpha += (0 - ranking[i].alpha) / setting.transitionTime;
+						console.log(ranking[i].name);
+					} else {
+						ranking[i].alpha = 0;
+					}
+				} else {
+					ranking[i].y += ((setting.topOffset + setting.boxHeight * i) - ranking[i].y ) / setting.transitionTime; 
+					if (ranking[i].prev < setting.maxDisplay)  {
+						ranking[i].alpha = 1;
+					} else {
+						ranking[i].alpha += (1 - ranking[i].alpha) / setting.transitionTime;
+					}
+					
 				}
+				
+				
 				
 				box.innerHTML = " <img src='images/glow/" + ranking[i].job + ".png' >"; 
 				box.innerHTML += "<div class='playerName'>" + ranking[i].name + "</div><br>";
 				
 				// writing the deeps or damage
-				if(ranking[i].dps > 0) {
-					box.innerHTML += "<div class='dmg'>" + ranking[i].dps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " (" + ranking[i].dmgp + ")</div><br>";
+				if (ranking[i].dps > 0) {
+					box.innerHTML += "<div class='dmg'>" + ranking[i].prev/*dps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")*/ + " (" + ranking[i].dmgp + ")</div><br>";
 				} else {
 					if(ranking[i].dmg > 0) {
 						box.innerHTML += "<div class='dmg' style='font-style:italic'>" + ranking[i].dmg + "</div><br>";
@@ -331,8 +357,8 @@ html {
 				
 				
 				// fancy printing of max hit
-				if(ranking[i].max > 0) {
-					if(ranking[i].max == maxHit) {
+				if (ranking[i].max > 0) {
+					if (ranking[i].max == maxHit) {
 						box.innerHTML += "<div class='max' style='color:yellow'>" + ranking[i].max + "</div><br>";
 					} else {
 						box.innerHTML += "<div class='max'>" + ranking[i].max + "</div><br>";
@@ -343,19 +369,19 @@ html {
 				
 				
 				// COLOR SETTING
-				var tank = ["Gld", "Gla", "Pld", "Mrd", "War", "Drk"];
-				var dps = ["Pgl", "Mnk", "Lnc", "Drg", "Arc", "Brd", "Rog", "Nin", "Acn", "Smn", "Thm", "Blm", "Mch"];
+				var tank   = ["Gld", "Gla", "Pld", "Mrd", "War", "Drk"];
+				var dps    = ["Pgl", "Mnk", "Lnc", "Drg", "Arc", "Brd", "Rog", "Nin", "Acn", "Smn", "Thm", "Blm", "Mch"];
 				var healer = ["Cnj", "Whm", "Sch", "Ast"];
 				
 				var themeColor = "rgba(200,0,200,0.3)";			
 				
-				if(healer.indexOf(ranking[i].job) != -1) {
+				if (healer.indexOf(ranking[i].job) != -1) {
 					themeColor = "rgba(107,240,86,0.3)";
-				} else if(dps.indexOf(ranking[i].job) != -1)  {
+				} else if (dps.indexOf(ranking[i].job) != -1)  {
 					themeColor = "rgba(200,3,8,0.3)";
-				} else if(tank.indexOf(ranking[i].job) != -1) {
+				} else if (tank.indexOf(ranking[i].job) != -1) {
 					themeColor = "rgba(41,112,243,0.3)";
-				} else if(ranking[i].job.indexOf("Limit Break") != -1){ 
+				} else if (ranking[i].job.indexOf("Limit Break") != -1){ 
 					themeColor = "rgba(243,102,8,0.3)";
 				} 
 				
@@ -403,12 +429,12 @@ html {
 					flashPos = 999;
 				}
 			}
+			
 		}
 		
 		
 		// Miniparse フォーマット文字列を解析し、表示文字列を取得する
-		function parseActFormat(str, dictionary)
-		{
+		function parseActFormat(str, dictionary) {
 			var result = "";
 
 			var currentIndex = 0;
@@ -425,8 +451,7 @@ html {
 						// parse error!
 						console.log("parseActFormat: Parse error: missing close-brace for " + openBraceIndex.toString() + ".");
 						return "ERROR";
-					}
-					else {
+					} else {
 						var tag = str.slice(openBraceIndex + 1, closeBraceIndex);
 						if (typeof dictionary[tag] !== 'undefined') {
 							result += dictionary[tag];
@@ -448,8 +473,10 @@ html {
 			dataset.push(dataset.shift());
 		}
 		
-		drawTimer = setInterval("draw()", 1000/60);
-	    updateTimer = setInterval("updateTest()", 2000);
+		drawTimer = setInterval("draw()", 1000/setting.fps);
+	    //updateTimer = setInterval("updateTest()", 2000);
+		
+		document.onmousedown = function(){updateTest();}
 		// TODO consider times where you dont attack|
 		
 	</script>
