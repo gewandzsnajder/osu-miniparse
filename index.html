@@ -31,7 +31,7 @@ html {
 #encounter {
     background: rgba(0,0,0,0.5);
 	text-shadow: unset;
-	width: 195px;
+	width: 140px;
 	height: 40px;
     padding: 0px;
 	padding-left: 5px;
@@ -51,8 +51,8 @@ html {
 }
 .combBox {
 	position: absolute;
-	width: 200px;
-	height: 50px;
+	width: 145px;
+	height: 40px;
 	vertical-align: middle;
 	display: block;
     padding: 1px;
@@ -60,12 +60,12 @@ html {
 }
 
 .combBox > .playerName {
-	
+	padding-right: 50px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	position: relative;
-	top: 5px;
+	top: 2px;
 }
 .combBox > .playerName.me {
 	font-weight: bold;
@@ -73,24 +73,56 @@ html {
 }
 
 .combBox > .dmg {
+	padding-left: 3px;
 	position: relative;
-	top: -10px;
+	top: -15px;
 	vertical-align: bottom;
 	font-size: 10pt;
+}
+
+
+.combBox > .dmg > .percent {
+	padding-left: 3px;
+	display: inline-block;
+	color: #BBB;
+	font-style: italic;
+	font-size: 8pt;
 }
 
 .combBox > .max {
 	color: SkyBlue;
 	position: relative;
-	top: -45px;
-	left: -10px;
+	top: -50px;
+	left: -7px;
 	font-size: 10pt;
 	text-align: right;
 }
 
+.combBox > .crit {
+	color: #EEEEEE;
+	position: absolute;
+	font-style: italic;
+	top: 5px;
+	left: 100px;
+	font-size: 9pt;
+	text-align: right;
+	width: 40px;
+}
+.combBox > .miss {
+	color: #FF0000;
+	position: absolute;
+	font-style: italic;
+	top: 26px;
+	left: 55px;
+	font-size: 9pt;
+	text-align: right;
+	width: 40px;
+}
+
+
 .combBox > .rank {
 	text-align: right;
-	opacity: 0.2;
+	opacity: 0.0;
 	font-size: 24pt;
 	position: relative;
 	left: -10px;
@@ -99,9 +131,9 @@ html {
 
 .combBox  img { 
 	position: relative;
-	top: 5px;
-	width: 40px;
-	height: 40px;
+	top: 1px;
+	width: 20px;
+	height: 20px;
 	padding: 2px;
 	float: left;
 }
@@ -130,7 +162,7 @@ html {
 	var dataset = [];
 	var setting = {};
 	setting.topOffset = 40;			// For positioning purposes should be like this
-	setting.boxHeight = 50; 		// This gives that little overlap to match the original
+	setting.boxHeight = 43; 		// This gives that little overlap to match the original
 	
 	
 	//==============================================
@@ -141,7 +173,7 @@ html {
 	setting.transitionTime = 5;		// Rank animation time, lower = shorter
 	setting.fps = 60;				// Drawing fps
 	
-	setting.nameInitials = "initials"; 	// Set name abbreviation rule: "default", "first", "last" or "initials"
+	setting.nameInitials = "last"; 	// Set name abbreviation rule: "default", "first", "last" or "initials"
 	
 	//==============================================
 	
@@ -188,9 +220,9 @@ html {
 			var encDiv = document.getElementById("encounter");
 			
 			// DRAWS TITLE
-			encDiv.innerHTML = "<table cellspacing=0 cellpadding=0><tr><td width=65%>" + parseActFormat("{title}" , data.Encounter) + "</td>" + 
-							    "<td align='right'>" + parseFloat(parseActFormat("{dps}" , data.Encounter)).toFixed(1) + "</td></tr>" + 
-								"<tr><td align='left'>" + parseActFormat("{duration}" , data.Encounter) + "</td></tr>" 
+			encDiv.innerHTML = "<table cellspacing=0 cellpadding=0><tr><td colspan=2><div id = 'title'>" + parseActFormat("{title}" , data.Encounter) + "</div></td></tr>" + 
+							    "<tr><td align='left'>" + parseActFormat("{duration}" , data.Encounter) + "</td>" + 
+								"<td align='right'>" + parseFloat(parseActFormat("{dps}" , data.Encounter)).toFixed(1) + "</td></tr>"
 								+ "</table>";
 			
 			// RANKING, THIS VAR STORES DATA TO BE DISPLAYED
@@ -206,7 +238,10 @@ html {
 				ranking[i].hps  = parseFloat(data.Combatant[combName]["enchps"].replace(/[\.,]+/g) ,".").toFixed(1);
 				ranking[i].dmg  = parseInt(data.Combatant[combName]["damage"]);
 				ranking[i].dmgp = data.Combatant[combName]["damage%"];
+				ranking[i].critp = data.Combatant[combName]["crithit%"];
 				ranking[i].max  = parseInt(data.Combatant[combName]["MAXHIT"].replace(/[\.,]+/g ,""));
+				ranking[i].maxname  = data.Combatant[combName]["maxhit"].replace(/[0-9\.,-]+/g ,"");
+				ranking[i].misses  = data.Combatant[combName]["misses"];
 				
 				// this is just to grab the correct glow icon
 				ranking[i].job = data.Combatant[combName]["Job"];
@@ -241,7 +276,7 @@ html {
 			}
 			
 			// remove stuff dealing 0 damage
-			/*
+			
 			var clean = new Array();
 			for(i = 0; i < ranking.length; i++) {
 				if(ranking[i].dmg > 0) {
@@ -249,7 +284,7 @@ html {
 				}
 			}
 			ranking = clean;
-			*/
+			
 			// SORT AND UPDATE RANKINGS
 			ranking.sort(function(a, b){return b.dmg - a.dmg});
 			
@@ -354,7 +389,7 @@ html {
 				
 				// writing the deeps or damage
 				if (ranking[i].dps > 0) {
-					box.innerHTML += "<div class='dmg'>" + ranking[i].dps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " (" + ranking[i].dmgp + ")</div><br>";
+					box.innerHTML += "<div class='dmg'>" + ranking[i].dps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "<div class='percent'>" + ranking[i].dmgp + "</div></div><br>";
 				} else {
 					if(ranking[i].dmg > 0) {
 						box.innerHTML += "<div class='dmg' style='font-style:italic'>" + ranking[i].dmg + "</div><br>";
@@ -363,6 +398,14 @@ html {
 					}
 				}
 				
+				// writing crit %
+				if (ranking[i].critp != "0%") {
+					box.innerHTML += "<div class='crit'>" + ranking[i].critp + "</div>";
+				}
+				// writing crit %
+				if (ranking[i].misses != "0") {
+					box.innerHTML += "<div class='miss'>" + ranking[i].misses + "</div>";
+				}
 				
 				// fancy printing of max hit
 				if (ranking[i].max > 0) {
@@ -377,9 +420,9 @@ html {
 				
 				
 				// COLOR SETTING
-				var tank   = ["Gld", "Gla", "Pld", "Mrd", "War", "Drk"];
-				var dps    = ["Pgl", "Mnk", "Lnc", "Drg", "Arc", "Brd", "Rog", "Nin", "Acn", "Smn", "Thm", "Blm", "Mch", "Sam", "Rdm"];
-				var healer = ["Cnj", "Whm", "Sch", "Ast"];
+				var tank   = ["Gld", "Gla", "Pld", "Mrd", "War", "Drk", "Gnb"];
+				var dps    = ["Pgl", "Mnk", "Lnc", "Drg", "Arc", "Brd", "Rog", "Nin", "Acn", "Smn", "Thm", "Blm", "Mch", "Sam", "Rdm", "Dnc", "Rpr"];
+				var healer = ["Cnj", "Whm", "Sch", "Ast", "Sge"];
 				
 				var maxOpacity = (i == myRank)?0.4:0.3;
 				var minOpacity = (i == myRank)?0.1:0.0;
@@ -401,6 +444,7 @@ html {
 				
 				box.style.top = ranking[i].y;
 				box.style.opacity = ranking[i].alpha;
+				
 				
 				var rank = document.createElement("div");
 				rank.className = "rank";
@@ -500,10 +544,8 @@ html {
 		}
 		
 		drawTimer = setInterval("draw()", 1000/setting.fps);
-	    //updateTimer = setInterval("updateTest()", 2000);
+	    //updateTimer = setInterval("updateTest()", 1000);
 		
-		//document.onmousedown = function(){updateTest();}
-		// TODO consider times where you dont attack|
 		
 	</script>
 </head>
